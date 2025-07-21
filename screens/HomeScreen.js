@@ -139,6 +139,13 @@ const HomeScreen = ({ navigation }) => {
       >
         <Text style={styles.progressButtonText}>Check My Progress</Text>
       </TouchableOpacity>
+      <TouchableOpacity 
+  style={styles.progressButton} 
+  onPress={() => navigation.navigate('WorkoutList')}
+>
+  <Text style={styles.progressButtonText}>View My Workouts</Text>
+</TouchableOpacity>
+
     </View>
   );
 };

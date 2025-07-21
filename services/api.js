@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //const API_BASE_URL = 'http://192.168.50.107:8000/api';
-const API_BASE_URL = 'http://172.20.10.3:8000/api';
+const API_BASE_URL = 'http://192.168.50.107:8000/api';
 
 // Create axios instance
 const api = axios.create({
@@ -159,6 +159,13 @@ export const userProgressAPI = {
   getHistory: () => api.get('/user-progresses/history').then(res => res.data),
   update: (id, data) => api.put(`/user-progresses/${id}`, data).then(res => res.data),
   delete: (id) => api.delete(`/user-progresses/${id}`).then(res => res.data),
+};
+export const workoutAPI = {
+  getAll: () => api.get('/workouts').then(res => res.data),
+  getById: (id) => api.get(`/workouts/${id}`).then(res => res.data),
+  create: (data) => api.post('/workouts', data).then(res => res.data),
+  update: (id, data) => api.put(`/workouts/${id}`, data).then(res => res.data),
+  delete: (id) => api.delete(`/workouts/${id}`).then(res => res.data),
 };
 
 // Export token management functions
