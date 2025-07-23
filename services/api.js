@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //const API_BASE_URL = 'http://192.168.50.107:8000/api';
-const API_BASE_URL = 'http://192.168.50.107:8000/api';
+const API_BASE_URL = 'http://172.20.10.3:8000/api';
 
 // Create axios instance
 const api = axios.create({
@@ -47,6 +47,37 @@ const clearToken = async () => {
     console.error('Error clearing token:', error);
   }
 };
+
+export const workoutAPI = {
+    updateExercisePivot: (workoutId, exerciseId, data) => {
+    return api.patch(`/workouts/${workoutId}/exercises/${exerciseId}`, data);
+  },
+
+  getAllWorkouts: () => api.get('/workouts'),
+  createWorkout: (workout) => api.post('/workouts', workout),
+ removeExercise: (workoutId, exerciseId) =>
+    api.delete(`/workouts/${workoutId}/exercises/${exerciseId}`),
+  // 🔥 AJOUTE CECI :
+attachExerciseToWorkout: (workoutId, exerciseId) =>
+  api.post(`/workouts/${workoutId}/exercises`, {
+    exercise_id: exerciseId,
+    achievement: 0,
+    is_done: false,
+    order: 0,
+  }),
+
+
+  create: (data) => api.post('/workouts', data).then(res => res.data),
+  getAll: () => api.get('/workouts').then(res => res.data),
+  // etc.
+     getAll: () => api.get('/workouts').then(res => res.data),
+  getById: (id) => api.get(`/workouts/${id}`).then(res => res.data),
+  create: (data) => api.post('/workouts', data).then(res => res.data),
+  update: (id, data) => api.put(`/workouts/${id}`, data).then(res => res.data),
+  delete: (id) => api.delete(`/workouts/${id}`).then(res => res.data),
+    addExercise: (workoutId, exerciseData) => api.post(`/workouts/${workoutId}/exercises`, exerciseData),
+};
+
 
 // Request interceptor
 api.interceptors.request.use(async (config) => {
@@ -148,9 +179,32 @@ export const programmeAPI = {
   activate: (id) => api.post(`/programmes/${id}/activate`),
 };
 
+// ...other imports and setup remain the same
+export const attachExerciseToWorkout = (workoutId, exerciseId) => {
+  return api.post(`/workouts/${workoutId}/exercises`, {
+    exercise_id: exerciseId,
+    achievement: 0,
+    is_done: false,
+    order: 0,
+  });
+};
 export const machineAPI = {
   getByBranch: (branchId) => api.get(`/branches/${branchId}/machines`),
+  getAll: () => api.get('/machines').then(res => res.data.data || res.data),
 };
+
+export const exerciseAPI = {
+    create: (data) => api.post('/exercises', data).then(res => res.data),
+
+  getAll: () => api.get('/exercises').then(res => res.data),
+  getById: (id) => api.get(`/exercises/${id}`).then(res => res.data),
+  getChargesForMachine: (machineId) => api.get(`/machines/${machineId}/charges`).then(res => res.data.data || res.data),
+  getMovements: () => api.get('/movements').then(res => res.data.data || res.data),
+  update: (id, data) => api.put(`/exercises/${id}`, data).then(res => res.data),
+delete: (id) => api.delete(`/exercises/${id}`).then(res => res.data),
+
+};
+
 
 export const userProgressAPI = {
   // This will now use the protected route that returns only the authenticated user's progress
@@ -160,13 +214,9 @@ export const userProgressAPI = {
   update: (id, data) => api.put(`/user-progresses/${id}`, data).then(res => res.data),
   delete: (id) => api.delete(`/user-progresses/${id}`).then(res => res.data),
 };
-export const workoutAPI = {
-  getAll: () => api.get('/workouts').then(res => res.data),
-  getById: (id) => api.get(`/workouts/${id}`).then(res => res.data),
-  create: (data) => api.post('/workouts', data).then(res => res.data),
-  update: (id, data) => api.put(`/workouts/${id}`, data).then(res => res.data),
-  delete: (id) => api.delete(`/workouts/${id}`).then(res => res.data),
-};
+
+
+// In your api.js (add this if missing)
 
 // Export token management functions
 export const tokenService = {

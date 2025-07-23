@@ -12,9 +12,7 @@ const MovementDetailsScreen = ({ route }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{movement.name}</Text>
-      </View>
+      <Text style={styles.header}>{movement.name}</Text>
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Description</Text>
@@ -29,9 +27,9 @@ const MovementDetailsScreen = ({ route }) => {
         </TouchableOpacity>
       )}
 
-      <View style={styles.infoCard}>
+      <View style={styles.card}>
         <Text style={styles.sectionTitle}>Informations</Text>
-        
+
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>ID :</Text>
           <Text style={styles.infoValue}>{movement.id}</Text>
@@ -52,10 +50,10 @@ const MovementDetailsScreen = ({ route }) => {
         </View>
       </View>
 
-      {movement.exercises && movement.exercises.length > 0 && (
-        <View style={styles.exercisesCard}>
+      {movement.exercises?.length > 0 && (
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Exercices associés</Text>
-          {movement.exercises.map((exercise, index) => (
+          {movement.exercises.map((exercise) => (
             <View key={exercise.id} style={styles.exerciseItem}>
               <Text style={styles.exerciseName}>{exercise.name}</Text>
               <Text style={styles.exerciseInfo}>
@@ -72,110 +70,90 @@ const MovementDetailsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#121212',
+    padding: 20,
   },
   header: {
-    backgroundColor: '#3498db',
-    padding: 20,
-    paddingTop: 40,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 26,
+    fontWeight: '900',
+    color: '#FF3B30',
     textAlign: 'center',
+    marginBottom: 20,
+    letterSpacing: 1.5,
   },
   card: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  infoCard: {
-    backgroundColor: '#fff',
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  exercisesCard: {
-    backgroundColor: '#fff',
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#1E1E1E',
+    padding: 20,
+    borderRadius: 24,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
+    shadowColor: '#FF3B30',
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#FF3B30',
     marginBottom: 12,
-    color: '#2c3e50',
   },
   description: {
     fontSize: 16,
+    color: '#DDD',
     lineHeight: 24,
-    color: '#34495e',
   },
   videoButton: {
-    backgroundColor: '#e74c3c',
-    margin: 16,
-    marginTop: 0,
+    backgroundColor: '#FF3B30',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 40,
     alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#FF3B30',
+    shadowOpacity: 0.7,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
   },
   videoButtonText: {
-    color: '#fff',
+    color: '#121212',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '900',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
-    paddingVertical: 4,
+    borderBottomColor: '#2A2A2A',
     borderBottomWidth: 1,
-    borderBottomColor: '#ecf0f1',
+    paddingVertical: 10,
   },
   infoLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#7f8c8d',
+    fontWeight: '700',
+    color: '#999',
   },
   infoValue: {
     fontSize: 14,
-    color: '#2c3e50',
+    fontWeight: '700',
+    color: '#DDD',
   },
   exerciseItem: {
-    padding: 12,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    marginBottom: 8,
+    backgroundColor: '#2A2A2A',
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 12,
   },
   exerciseName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: 4,
+    fontWeight: '900',
+    color: '#1E90FF',
+    marginBottom: 6,
   },
   exerciseInfo: {
     fontSize: 14,
-    color: '#7f8c8d',
+    color: '#CCC',
   },
 });
 

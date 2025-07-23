@@ -26,7 +26,7 @@ const MachineListScreen = ({ route, navigation }) => {
       setLoading(true);
       setError(null);
       const response = await machineAPI.getByBranch(branch.id);
-    setMachines(response.data.data);  // <-- Fix here
+      setMachines(response.data.data);
     } catch (err) {
       console.error('Failed to load machines:', err);
       setError('Failed to load machines. Please try again.');
@@ -43,6 +43,7 @@ const MachineListScreen = ({ route, navigation }) => {
     <TouchableOpacity 
       style={styles.machineCard}
       onPress={() => handleMachinePress(item)}
+      activeOpacity={0.8}
     >
       {item.image_url && (
         <Image 
@@ -60,20 +61,20 @@ const MachineListScreen = ({ route, navigation }) => {
           </Text>
         )}
         <View style={styles.chargesContainer}>
-          <Icon name="bolt" size={14} color="#ffc107" />
+          <Icon name="bolt" size={14} color="#FF3B30" />
           <Text style={styles.chargesText}>
             {item.charges.length} charges available
           </Text>
         </View>
       </View>
-      <Icon name="chevron-right" size={16} color="#999" />
+      <Icon name="chevron-right" size={16} color="#FF3B30" />
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color="#FF3B30" />
       </View>
     );
   }
@@ -97,7 +98,7 @@ const MachineListScreen = ({ route, navigation }) => {
         data={machines}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderMachineItem}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={machines.length === 0 && styles.listEmptyContainer}
         ListEmptyComponent={
           <View style={styles.centerContainer}>
             <Text style={styles.noMachinesText}>No machines available at this branch</Text>
@@ -111,8 +112,8 @@ const MachineListScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: '#f5f5f5',
+    padding: 20,
+    backgroundColor: '#121212', // dark background
   },
   centerContainer: {
     flex: 1,
@@ -120,52 +121,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333',
+    color: '#FF3B30',
+    textAlign: 'center',
+    letterSpacing: 1,
   },
-  listContainer: {
-    paddingBottom: 20,
+  listEmptyContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   machineCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 8,
+    backgroundColor: '#1E1E1E',
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2A2A2A',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
   },
   machineImage: {
     width: 60,
     height: 60,
-    borderRadius: 8,
-    marginRight: 10,
+    borderRadius: 12,
+    marginRight: 15,
   },
   machineInfo: {
     flex: 1,
   },
   machineName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 2,
+    color: '#FF3B30',
+    marginBottom: 4,
   },
   machineType: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 5,
+    color: '#CCCCCC',
+    marginBottom: 6,
   },
   machineDescription: {
     fontSize: 13,
-    color: '#777',
-    marginBottom: 5,
+    color: '#AAAAAA',
+    marginBottom: 6,
   },
   chargesContainer: {
     flexDirection: 'row',
@@ -173,28 +178,29 @@ const styles = StyleSheet.create({
   },
   chargesText: {
     fontSize: 13,
-    color: '#666',
-    marginLeft: 5,
+    color: '#FF3B30',
+    marginLeft: 6,
   },
   errorText: {
-    color: '#dc3545',
+    color: '#FF6F61',
     fontSize: 16,
     marginBottom: 15,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#FF3B30',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 5,
+    borderRadius: 8,
   },
   retryButtonText: {
-    color: 'white',
+    color: '#121212',
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   noMachinesText: {
     fontSize: 16,
-    color: '#666',
+    color: '#888',
     fontStyle: 'italic',
   },
 });

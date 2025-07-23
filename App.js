@@ -12,6 +12,7 @@ import WorkoutDetailsScreen from './screens/WorkoutDetailsScreen';
 import ExerciseDetailsScreen from './screens/ExerciseDetailsScreen';
 import MachineDetailsScreen from './screens/MachineDetailsScreen';
 import MovementDetailsScreen from './screens/MovementDetailsScreen';
+import AddExerciseScreen from './screens/AddExerciseScreen';
 
 const Stack = createStackNavigator();
 
@@ -71,6 +72,7 @@ export default function App() {
           options={({ route }) => ({ title: route.params.machine.name })}
         />
         <Stack.Screen name="UserProgress" component={UserProgressScreen} />
+<Stack.Screen name="AddExercise" component={AddExerciseScreen} />
 
       </Stack.Navigator>
       

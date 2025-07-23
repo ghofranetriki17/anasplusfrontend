@@ -37,7 +37,7 @@ const MachineDetailScreen = ({ route }) => {
         {machine.charges.length > 0 ? (
           machine.charges.map((charge, index) => (
             <View key={index} style={styles.chargeItem}>
-              <Icon name="bolt" size={16} color="#ffc107" />
+              <Icon name="bolt" size={18} color="#FF3B30" />
               <Text style={styles.chargeText}>{charge.weight} kg</Text>
             </View>
           ))
@@ -47,8 +47,10 @@ const MachineDetailScreen = ({ route }) => {
       </View>
 
       {machine.video_url && (
-        <TouchableOpacity style={styles.videoButton}>
-          <Icon name="play-circle" size={20} color="#007bff" />
+        <TouchableOpacity style={styles.videoButton} activeOpacity={0.8} onPress={() => {
+          // Add logic to open video URL, e.g., Linking.openURL(machine.video_url)
+        }}>
+          <Icon name="play-circle" size={22} color="#FF3B30" />
           <Text style={styles.videoButtonText}>View Demonstration Video</Text>
         </TouchableOpacity>
       )}
@@ -59,78 +61,82 @@ const MachineDetailScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: '#f5f5f5',
+    padding: 20,
+    backgroundColor: '#121212', // dark background
   },
   machineImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 15,
+    height: 220,
+    borderRadius: 12,
+    marginBottom: 20,
   },
   header: {
-    marginBottom: 20,
+    marginBottom: 25,
   },
   machineName: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 5,
+    color: '#FF3B30',
+    marginBottom: 6,
+    letterSpacing: 1,
   },
   machineType: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 10,
+    fontSize: 18,
+    color: '#CCCCCC',
+    marginBottom: 12,
   },
   machineDescription: {
-    fontSize: 15,
-    color: '#555',
-    lineHeight: 22,
+    fontSize: 16,
+    color: '#AAAAAA',
+    lineHeight: 24,
   },
   section: {
-    marginBottom: 20,
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 8,
+    marginBottom: 25,
+    backgroundColor: '#1E1E1E',
+    padding: 18,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2A2A2A',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333',
+    color: '#FF3B30',
   },
   chargeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#333',
   },
   chargeText: {
     fontSize: 16,
-    marginLeft: 10,
+    marginLeft: 14,
+    color: '#CCCCCC',
   },
   noDataText: {
-    fontSize: 15,
-    color: '#666',
+    fontSize: 16,
+    color: '#666666',
     fontStyle: 'italic',
     textAlign: 'center',
   },
   videoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: '#1E1E1E',
+    padding: 18,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2A2A2A',
     marginTop: 10,
   },
   videoButtonText: {
-    fontSize: 16,
-    color: '#007bff',
-    marginLeft: 10,
+    fontSize: 18,
+    color: '#FF3B30',
+    marginLeft: 14,
+    fontWeight: '600',
   },
 });
 

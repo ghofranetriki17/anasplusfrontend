@@ -16,6 +16,7 @@ import { userProgressAPI } from '../services/api';
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -32,7 +33,6 @@ const UserProgressScreen = () => {
   const [bodyFat, setBodyFat] = useState('');
   const [muscleMass, setMuscleMass] = useState('');
   const [recordedAt, setRecordedAt] = useState('');
-  const [userId, setUserId] = useState(null);
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -41,17 +41,9 @@ const UserProgressScreen = () => {
 
   const loadUserData = async () => {
     try {
-      const storedUserId = await AsyncStorage.getItem('userId');
       const storedUserName = await AsyncStorage.getItem('userName');
-      
-      if (storedUserId) {
-        setUserId(parseInt(storedUserId));
-        setUserName(storedUserName || 'User');
-        // Load progress after getting user ID
-        fetchProgresses();
-      } else {
-        Alert.alert('Error', 'User not logged in');
-      }
+      setUserName(storedUserName || 'User');
+      fetchProgresses();
     } catch (error) {
       console.error('Error loading user data:', error);
       Alert.alert('Error', 'Failed to load user data');
@@ -63,16 +55,12 @@ const UserProgressScreen = () => {
   const fetchProgresses = async () => {
     try {
       setLoading(true);
-      // This will now use the protected route that returns only user's progress
       const data = await userProgressAPI.getAll();
       setProgresses(data);
     } catch (error) {
       console.error('Error fetching progress:', error);
-      
-      // Better error handling
       if (error.response?.status === 401) {
         Alert.alert('Session Expired', 'Please log in again');
-        // You might want to navigate to login screen here
       } else {
         const errorMessage = error.response?.data?.message || 'Failed to load progress data';
         Alert.alert('Error', errorMessage);
@@ -88,20 +76,17 @@ const UserProgressScreen = () => {
       return;
     }
 
-    // At least one measurement should be provided
     if (!weight && !height && !bodyFat && !muscleMass) {
       Alert.alert('Validation', 'Please provide at least one measurement');
       return;
     }
 
-    // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(recordedAt)) {
       Alert.alert('Validation', 'Please enter date in YYYY-MM-DD format');
       return;
     }
 
-    // Validate numeric inputs
     if (weight && (isNaN(parseFloat(weight)) || parseFloat(weight) <= 0)) {
       Alert.alert('Validation', 'Please enter a valid weight');
       return;
@@ -123,11 +108,7 @@ const UserProgressScreen = () => {
     }
 
     try {
-      const progressData = {
-        recorded_at: recordedAt,
-      };
-
-      // Only include fields that have values
+      const progressData = { recorded_at: recordedAt };
       if (weight) progressData.weight = parseFloat(weight);
       if (height) progressData.height = parseFloat(height);
       if (bodyFat) progressData.body_fat = parseFloat(bodyFat);
@@ -136,8 +117,7 @@ const UserProgressScreen = () => {
       await userProgressAPI.create(progressData);
       Alert.alert('Success', 'Progress added successfully');
       fetchProgresses();
-      
-      // Clear form
+
       setWeight('');
       setHeight('');
       setBodyFat('');
@@ -145,21 +125,17 @@ const UserProgressScreen = () => {
       setRecordedAt('');
     } catch (error) {
       console.error('Error adding progress:', error);
-      
       let errorMessage = 'Failed to save progress';
       if (error.response?.data?.details) {
-        // Handle validation errors
         const details = error.response.data.details;
         errorMessage = Object.values(details).flat().join('\n');
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
       Alert.alert('Error', errorMessage);
     }
   };
 
-  // Set today's date as default
   const getTodaysDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -172,55 +148,49 @@ const UserProgressScreen = () => {
     setRecordedAt(getTodaysDate());
   };
 
-  // Prepare chart data with better handling for missing data
   const getChartData = () => {
     if (progresses.length === 0) return null;
-    
     const recentProgresses = progresses.slice(-5);
     const labels = recentProgresses.map(p => new Date(p.recorded_at).toLocaleDateString());
-    
+
     const datasets = [];
-    
-    // Add weight data if available
+
     const weightData = recentProgresses.map(p => p.weight ? parseFloat(p.weight) : 0);
     if (weightData.some(w => w > 0)) {
       datasets.push({
         data: weightData,
-        color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`, // blue
+        color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
         strokeWidth: 2,
       });
     }
-    
-    // Add height data if available
+
     const heightData = recentProgresses.map(p => p.height ? parseFloat(p.height) : 0);
     if (heightData.some(h => h > 0)) {
       datasets.push({
         data: heightData,
-        color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`, // red
+        color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
         strokeWidth: 2,
       });
     }
-    
-    // Add muscle mass data if available
+
     const muscleMassData = recentProgresses.map(p => p.muscle_mass ? parseFloat(p.muscle_mass) : 0);
     if (muscleMassData.some(m => m > 0)) {
       datasets.push({
         data: muscleMassData,
-        color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`, // turquoise
+        color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`,
         strokeWidth: 2,
       });
     }
-    
-    // Add body fat data if available
+
     const bodyFatData = recentProgresses.map(p => p.body_fat ? parseFloat(p.body_fat) : 0);
     if (bodyFatData.some(b => b > 0)) {
       datasets.push({
         data: bodyFatData,
-        color: (opacity = 1) => `rgba(255, 206, 86, ${opacity})`, // yellow
+        color: (opacity = 1) => `rgba(255, 206, 86, ${opacity})`,
         strokeWidth: 2,
       });
     }
-    
+
     return datasets.length > 0 ? { labels, datasets } : null;
   };
 
@@ -281,11 +251,37 @@ const UserProgressScreen = () => {
           renderItem={({ item }) => (
             <View style={styles.progressItem}>
               <Text style={styles.dateText}>{new Date(item.recorded_at).toLocaleDateString()}</Text>
-              <Text>Weight: {item.weight ? `${item.weight} kg` : '-'}</Text>
-              <Text>Height: {item.height ? `${item.height} cm` : '-'}</Text>
-              <Text>Body Fat: {item.body_fat ? `${item.body_fat}%` : '-'}</Text>
-              <Text>Muscle Mass: {item.muscle_mass ? `${item.muscle_mass}%` : '-'}</Text>
-              <Text>BMI: {formatImc(item.imc)}</Text>
+              <View style={styles.metricsContainer}>
+                <View style={styles.metricBox}>
+                  <Icon name="balance-scale" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.weight ? `${item.weight} kg` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Weight</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="arrows-v" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.height ? `${item.height} cm` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Height</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="tint" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.body_fat ? `${item.body_fat}%` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Body Fat</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="heartbeat" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.muscle_mass ? `${item.muscle_mass}%` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Muscle Mass</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="balance-scale" size={24} color="#FFD700" />
+                  <Text style={styles.metricValue}>{formatImc(item.imc)}</Text>
+                  <Text style={styles.metricLabel}>BMI</Text>
+                </View>
+              </View>
             </View>
           )}
           scrollEnabled={false}
@@ -304,6 +300,7 @@ const UserProgressScreen = () => {
             value={weight}
             onChangeText={setWeight}
             style={styles.input}
+            placeholderTextColor="#9a9a9aff"
           />
           <TextInput
             placeholder="Height (cm) - optional"
@@ -311,6 +308,7 @@ const UserProgressScreen = () => {
             value={height}
             onChangeText={setHeight}
             style={styles.input}
+            placeholderTextColor="#9a9a9aff"
           />
           <TextInput
             placeholder="Body Fat % - optional"
@@ -318,6 +316,7 @@ const UserProgressScreen = () => {
             value={bodyFat}
             onChangeText={setBodyFat}
             style={styles.input}
+            placeholderTextColor="#9a9a9aff"
           />
           <TextInput
             placeholder="Muscle Mass % - optional"
@@ -325,6 +324,7 @@ const UserProgressScreen = () => {
             value={muscleMass}
             onChangeText={setMuscleMass}
             style={styles.input}
+            placeholderTextColor="#9a9a9aff"
           />
           <View style={styles.dateInputContainer}>
             <TextInput
@@ -332,6 +332,7 @@ const UserProgressScreen = () => {
               value={recordedAt}
               onChangeText={setRecordedAt}
               style={[styles.input, { flex: 1 }]}
+              placeholderTextColor="#9a9a9aff"
             />
             <Button title="Today" onPress={setTodaysDate} />
           </View>
@@ -343,46 +344,98 @@ const UserProgressScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 15, backgroundColor: '#f5f5f5', flexGrow: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 15, color: '#333' },
-  loadingText: { marginTop: 10, color: '#666' },
-  progressItem: { 
-    backgroundColor: 'white', 
+  container: { 
     padding: 15, 
-    marginBottom: 8, 
-    borderRadius: 8,
+    backgroundColor: '#121212', 
+    flexGrow: 1,
+  },
+  center: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    marginBottom: 15, 
+    color: '#FF3B30', 
+    textShadowColor: '#900000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
+    letterSpacing: 1,
+  },
+  loadingText: { 
+    marginTop: 10, 
+    color: '#FFFFFF', 
+  },
+  progressItem: { 
+    backgroundColor: '#1E1E1E', 
+    padding: 15, 
+    marginBottom: 12,  
+    borderRadius: 12,  
     borderWidth: 1,
-    borderColor: '#eee'
+    borderColor: '#333',
   },
   dateText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#007bff'
+    color: '#FF6F61', 
+    fontSize: 16,    
+    fontWeight: '600', 
+    marginBottom: 15, 
+    textAlign: 'center',
+  },
+  metricsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  metricBox: {
+    width: '30%',
+    backgroundColor: '#2A2A2A',
+    marginBottom: 15,
+    borderRadius: 10,
+    paddingVertical: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  metricValue: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 5,
+  },
+  metricLabel: {
+    color: '#AAA',
+    fontSize: 12,
+    marginTop: 3,
+    textTransform: 'uppercase',
   },
   form: { 
     marginTop: 20, 
-    backgroundColor: 'white', 
+    backgroundColor: '#1E1E1E', 
     padding: 15, 
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#eee'
+    borderColor: '#333',
   },
   formTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333'
+    color: '#FF3B30',
   },
   input: {
-    borderColor: '#ccc',
+    borderColor: '#333',
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginBottom: 10,
     borderRadius: 6,
-    backgroundColor: '#fafafa',
+    color: '#FFFFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   dateInputContainer: {
     flexDirection: 'row',
@@ -397,6 +450,7 @@ const styles = StyleSheet.create({
   legendText: {
     fontWeight: 'bold',
     fontSize: 12,
+    color: '#FFFFFF',
   },
   emptyContainer: {
     padding: 20,
@@ -404,7 +458,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#FFFFFFa5',
     textAlign: 'center',
   },
 });

@@ -1,7 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { branchAPI, authAPI } from '../services/api';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  ScrollView,
+  Alert, // <-- Import Alert here
+} from 'react-native';
+import { branchAPI } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.75;
+const CARD_SPACING = 15;
 
 const HomeScreen = ({ navigation }) => {
   const [branches, setBranches] = useState([]);
@@ -17,9 +33,7 @@ const HomeScreen = ({ navigation }) => {
   const loadUserName = async () => {
     try {
       const storedUserName = await AsyncStorage.getItem('userName');
-      if (storedUserName) {
-        setUserName(storedUserName);
-      }
+      if (storedUserName) setUserName(storedUserName);
     } catch (error) {
       console.error('Error loading user name:', error);
     }
@@ -32,36 +46,32 @@ const HomeScreen = ({ navigation }) => {
       setBranches(response.data);
       setError(null);
     } catch (err) {
-      console.error('Failed to load branches:', err);
       setError('Failed to load branches. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Logout',
+          style: 'destructive',
           onPress: async () => {
             try {
-              await authAPI.logout();
+              await AsyncStorage.clear();
               navigation.replace('Auth');
             } catch (error) {
-              console.error('Logout error:', error);
-              // Even if logout fails on server, clear local data and redirect
-              navigation.replace('Auth');
+              console.error('Logout failed:', error);
             }
           },
         },
-      ]
+      ],
+      { cancelable: true }
     );
   };
 
@@ -69,21 +79,10 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('BranchDetail', { branch });
   };
 
-  const renderBranchItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.branchCard}
-      onPress={() => handleBranchPress(item)}
-    >
-      <Text style={styles.branchName}>{item.name}</Text>
-      <Text style={styles.branchAddress}>{item.address}, {item.city}</Text>
-      <Text style={styles.branchContact}>Phone: {item.phone}</Text>
-    </TouchableOpacity>
-  );
-
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color="#FF3B30" />
       </View>
     );
   }
@@ -100,150 +99,173 @@ const HomeScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header with welcome message and logout */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome, {userName}!</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      {/* Hero Banner */}
+      <View style={styles.heroBanner}>
+        <Text style={styles.heroTitle}>🏋️‍♂️ Welcome, {userName}!</Text>
+        <Text style={styles.heroSubtitle}>Find your perfect training location.</Text>
+        <Image
+          source={require('../assets/gym-banner.jpg')} // Replace with your image path
+          style={styles.heroImage}
+        />
       </View>
 
-      <Text style={styles.subtitle}>Our Branches</Text>
-      
+      {/* Branch List */}
       <FlatList
+        horizontal
         data={branches}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({item}) => (
-          <TouchableOpacity 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: CARD_SPACING }}
+        snapToInterval={CARD_WIDTH + CARD_SPACING}
+        decelerationRate="fast"
+        renderItem={({ item }) => (
+          <TouchableOpacity
             style={styles.branchCard}
-            onPress={() => navigation.navigate('BranchDetail', { branch: item })}
+            onPress={() => handleBranchPress(item)}
           >
             <Text style={styles.branchName}>{item.name}</Text>
-            <Text style={styles.branchAddress}>{item.address}, {item.city}</Text>
+            <Text style={styles.branchAddress}>
+              {item.address}, {item.city}
+            </Text>
             <Text style={styles.branchContact}>Phone: {item.phone}</Text>
           </TouchableOpacity>
         )}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.centerContainer}>
-            <Text style={styles.noBranchesText}>No branches available</Text>
-          </View>
-        }
       />
 
-      {/* Progress button */}
-      <TouchableOpacity 
-        style={styles.progressButton} 
+      {/* Buttons */}
+      <TouchableOpacity
+        style={styles.progressButton}
         onPress={() => navigation.navigate('UserProgress')}
       >
+        <FontAwesome name="line-chart" size={16} color="white" style={styles.icon} />
         <Text style={styles.progressButtonText}>Check My Progress</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
-  style={styles.progressButton} 
-  onPress={() => navigation.navigate('WorkoutList')}
->
-  <Text style={styles.progressButtonText}>View My Workouts</Text>
-</TouchableOpacity>
 
-    </View>
+      <TouchableOpacity
+        style={styles.progressButton}
+        onPress={() => navigation.navigate('WorkoutList')}
+      >
+        <FontAwesome name="heartbeat" size={16} color="white" style={styles.icon} />
+        <Text style={styles.progressButtonText}>View My Workouts</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.progressButton, { backgroundColor: '#333', marginBottom: 40 }]}
+        onPress={handleLogout}
+      >
+        <FontAwesome name="sign-out" size={16} color="#FF3B30" style={styles.icon} />
+        <Text style={[styles.progressButtonText, { color: '#FF3B30' }]}>Logout</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  heroBanner: {
+    paddingHorizontal: 20,
+    paddingTop: 30,
+    paddingBottom: 20,
+  },
+  heroTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#FF3B30',
+    marginBottom: 5,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    marginBottom: 15,
+  },
+  heroImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: 16,
+    backgroundColor: '#222',
+  },
+  branchCard: {
+    width: CARD_WIDTH,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    padding: 20,
+    marginRight: CARD_SPACING,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#333',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  branchName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FF3B30',
     marginBottom: 10,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    flex: 1,
+  branchAddress: {
+    fontSize: 16,
+    color: '#CCCCCC',
+    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 20,
-    color: '#333',
-  },
-  logoutButton: {
-    backgroundColor: '#dc3545',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  logoutButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
+  branchContact: {
+    fontSize: 16,
+    color: '#CCCCCC',
   },
   progressButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 15,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FF3B30',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    marginHorizontal: 20,
+    marginTop: 20,
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
   },
   progressButtonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 16,
+    letterSpacing: 1,
+  },
+  icon: {
+    marginRight: 10,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  branchCard: {
-    backgroundColor: 'white',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  branchName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  branchAddress: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 3,
-  },
-  branchContact: {
-    fontSize: 14,
-    color: '#666',
-  },
   errorText: {
-    color: 'red',
-    fontSize: 16,
-    marginBottom: 10,
+    color: '#FF3B30',
+    fontSize: 18,
+    marginBottom: 12,
+    fontWeight: '600',
   },
   retryButton: {
     backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
   },
   retryButtonText: {
     color: 'white',
-    fontWeight: 'bold',
-  },
-  noBranchesText: {
+    fontWeight: '700',
     fontSize: 16,
-    color: '#666',
+    letterSpacing: 1,
   },
 });
+
 export default HomeScreen;
