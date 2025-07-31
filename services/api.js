@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //const API_BASE_URL = 'http://192.168.50.107:8000/api';
-const API_BASE_URL = 'http://172.20.10.3:8000/api';
+const API_BASE_URL = 'http://192.168.50.117:8000/api';
 
 // Create axios instance
 const api = axios.create({
@@ -162,8 +162,13 @@ export const authAPI = {
   },
   getUser: () => api.get('/user'),
 };
-
+export const groupSessionAPI = {
+  getByBranch: (branchId) =>
+    api.get(`/branches/${branchId}/sessions`).then(res => res.data.data || res.data),
+};
 export const branchAPI = {
+  getCoaches: (branchId) =>
+    api.get(`/branches/${branchId}/coaches`).then(res => res.data.data || res.data),
   getAll: () => api.get('/branches').then(response => ({
     data: response.data.data || response.data
   })),

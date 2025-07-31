@@ -13,6 +13,8 @@ import ExerciseDetailsScreen from './screens/ExerciseDetailsScreen';
 import MachineDetailsScreen from './screens/MachineDetailsScreen';
 import MovementDetailsScreen from './screens/MovementDetailsScreen';
 import AddExerciseScreen from './screens/AddExerciseScreen';
+import CoachDetailScreen from './screens/CoachDetailScreen';
+import SessionDetail from './screens/SessionDetail';
 
 const Stack = createStackNavigator();
 
@@ -56,6 +58,13 @@ export default function App() {
   component={ExerciseDetailsScreen} 
   options={{ title: 'Exercise Details' }} 
 />
+ <Stack.Screen 
+          name="SessionDetail" 
+          component={SessionDetail} 
+          options={{ title: 'Détails de la session' }}
+        />
+<Stack.Screen name="CoachDetail" component={CoachDetailScreen} />
+
        <Stack.Screen 
           name="MachineList" 
           component={MachineListScreen} 
