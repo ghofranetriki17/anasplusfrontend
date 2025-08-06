@@ -32,8 +32,9 @@ const BranchDetailScreen = ({ route, navigation }) => {
   const [groupSessions, setGroupSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-  const [showWomenSessions, setShowWomenSessions] = useState(false);
-  const [womenSessions, setWomenSessions] = useState([]);
+  const [showSpecialSessions, setShowSpecialSessions] = useState(false);
+  const [specialSessions, setSpecialSessions] = useState([]);
+  const [sessionType, setSessionType] = useState('');
 
   useEffect(() => {
     fetchCoaches();
@@ -239,12 +240,16 @@ const BranchDetailScreen = ({ route, navigation }) => {
 
   const renderSession = ({ item: session }) => {
     const isWomenOnly = session.is_for_women && !session.is_for_kids && !session.is_free;
+    const isKidsOnly = session.is_for_kids && !session.is_for_women && !session.is_free;
+    const isFree = session.is_free && !session.is_for_women && !session.is_for_kids;
 
     return (
       <TouchableOpacity 
         style={[
           styles.sessionCard,
-          isWomenOnly && styles.womenOnlyCard
+          isWomenOnly && styles.womenOnlyCard,
+          isKidsOnly && styles.kidsOnlyCard,
+          isFree && styles.freeOnlyCard
         ]}
         onPress={() => navigation.navigate('SessionDetail', { session })}
       >
@@ -259,6 +264,9 @@ const BranchDetailScreen = ({ route, navigation }) => {
           {session.is_for_women && <Text style={[styles.sessionBadge, styles.womenBadge]}>👩 Femmes</Text>}
           {session.is_for_kids && <Text style={[styles.sessionBadge, styles.kidsBadge]}>🧒 Enfants</Text>}
           {session.is_free && <Text style={[styles.sessionBadge, styles.freeBadge]}>🎁 Gratuit</Text>}
+          {!session.is_free && !session.is_for_women && !session.is_for_kids && (
+            <Text style={[styles.sessionBadge, styles.paidBadge]}>💰 Payant</Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -268,9 +276,23 @@ const BranchDetailScreen = ({ route, navigation }) => {
     const weekDates = getWeekDates(currentWeekOffset);
     const today = new Date();
     
-    // Count women-only sessions for the week
+    // Count special sessions for the week
     const womenSessionsCount = groupSessions.filter(session => 
       session.is_for_women && 
+      weekDates.some(date => 
+        new Date(session.session_date).toDateString() === date.toDateString()
+      )
+    ).length;
+    
+    const kidsSessionsCount = groupSessions.filter(session => 
+      session.is_for_kids && 
+      weekDates.some(date => 
+        new Date(session.session_date).toDateString() === date.toDateString()
+      )
+    ).length;
+    
+    const freeSessionsCount = groupSessions.filter(session => 
+      session.is_free && 
       weekDates.some(date => 
         new Date(session.session_date).toDateString() === date.toDateString()
       )
@@ -298,24 +320,80 @@ const BranchDetailScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
         
-        {/* Women Sessions Summary Card */}
-        <TouchableOpacity 
-          style={styles.womenSummaryCard}
-          onPress={() => {
-            const womenSessions = groupSessions.filter(s => s.is_for_women);
-            setWomenSessions(womenSessions);
-            setShowWomenSessions(true);
-          }}
-        >
-          <View style={styles.womenSummaryContent}>
-            <Ionicons name="woman" size={40} color="#FF69B4" />
-            <View style={styles.womenSummaryText}>
-              <Text style={styles.womenSummaryTitle}>Sessions Femmes</Text>
-              <Text style={styles.womenSummaryCount}>{womenSessionsCount} sessions cette semaine</Text>
+        {/* Special Sessions Summary Cards */}
+        <View style={styles.specialSessionsRow}>
+          {/* Women Sessions */}
+          <TouchableOpacity 
+            style={[styles.specialSummaryCard, styles.womenSummaryCard]}
+            onPress={() => {
+              const sessions = groupSessions.filter(s => 
+                s.is_for_women && 
+                weekDates.some(date => 
+                  new Date(s.session_date).toDateString() === date.toDateString()
+                )
+              );
+              setSpecialSessions(sessions);
+              setSessionType('Femmes');
+              setShowSpecialSessions(true);
+            }}
+          >
+            <View style={styles.specialSummaryContent}>
+              <Ionicons name="woman" size={30} color="#FF69B4" />
+              <View style={styles.specialSummaryText}>
+                <Text style={styles.specialSummaryTitle}>Femmes</Text>
+                <Text style={styles.specialSummaryCount}>{womenSessionsCount} sessions</Text>
+              </View>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#FF69B4" />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          
+          {/* Kids Sessions */}
+          <TouchableOpacity 
+            style={[styles.specialSummaryCard, styles.kidsSummaryCard]}
+            onPress={() => {
+              const sessions = groupSessions.filter(s => 
+                s.is_for_kids && 
+                weekDates.some(date => 
+                  new Date(s.session_date).toDateString() === date.toDateString()
+                )
+              );
+              setSpecialSessions(sessions);
+              setSessionType('Enfants');
+              setShowSpecialSessions(true);
+            }}
+          >
+            <View style={styles.specialSummaryContent}>
+              <Ionicons name="happy" size={30} color="#64D2FF" />
+              <View style={styles.specialSummaryText}>
+                <Text style={styles.specialSummaryTitle}>Enfants</Text>
+                <Text style={styles.specialSummaryCount}>{kidsSessionsCount} sessions</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+          
+          {/* Free Sessions */}
+          <TouchableOpacity 
+            style={[styles.specialSummaryCard, styles.freeSummaryCard]}
+            onPress={() => {
+              const sessions = groupSessions.filter(s => 
+                s.is_free && 
+                weekDates.some(date => 
+                  new Date(s.session_date).toDateString() === date.toDateString()
+                )
+              );
+              setSpecialSessions(sessions);
+              setSessionType('Gratuites');
+              setShowSpecialSessions(true);
+            }}
+          >
+            <View style={styles.specialSummaryContent}>
+              <Ionicons name="gift" size={30} color="#00FF88" />
+              <View style={styles.specialSummaryText}>
+                <Text style={styles.specialSummaryTitle}>Gratuites</Text>
+                <Text style={styles.specialSummaryCount}>{freeSessionsCount} sessions</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
         
         <ScrollView 
           horizontal 
@@ -362,7 +440,9 @@ const BranchDetailScreen = ({ route, navigation }) => {
                       <TouchableOpacity 
                         style={[
                           styles.sessionChip,
-                          item.is_for_women && styles.womenOnlyChip
+                          item.is_for_women && styles.womenOnlyChip,
+                          item.is_for_kids && styles.kidsOnlyChip,
+                          item.is_free && styles.freeOnlyChip
                         ]}
                         onPress={() => navigation.navigate('SessionDetail', { session: item })}
                       >
@@ -658,38 +738,60 @@ const BranchDetailScreen = ({ route, navigation }) => {
         </View>
       </View>
 
-      {/* Women Sessions Modal */}
+      {/* Special Sessions Modal */}
       <Modal
-        visible={showWomenSessions}
+        visible={showSpecialSessions}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowWomenSessions(false)}
+        onRequestClose={() => setShowSpecialSessions(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Sessions Femmes</Text>
-              <Pressable onPress={() => setShowWomenSessions(false)}>
+              <Text style={[
+                styles.modalTitle,
+                sessionType === 'Femmes' && styles.womenModalTitle,
+                sessionType === 'Enfants' && styles.kidsModalTitle,
+                sessionType === 'Gratuites' && styles.freeModalTitle
+              ]}>
+                Sessions {sessionType}
+              </Text>
+              <Pressable onPress={() => setShowSpecialSessions(false)}>
                 <Ionicons name="close" size={24} color="#FF3B30" />
               </Pressable>
             </View>
             
             <FlatList
-              data={womenSessions}
+              data={specialSessions}
               keyExtractor={item => item.id.toString()}
               renderItem={({ item }) => (
-                <View style={styles.modalSessionCard}>
+                <View style={[
+                  styles.modalSessionCard,
+                  item.is_for_women && styles.womenModalCard,
+                  item.is_for_kids && styles.kidsModalCard,
+                  item.is_free && styles.freeModalCard
+                ]}>
                   <Text style={styles.modalSessionTitle}>{item.title}</Text>
                   <Text style={styles.modalSessionInfo}>
                     {new Date(item.session_date).toLocaleString()} • {item.duration} min
                   </Text>
                   <Text style={styles.modalSessionInfo}>Coach: {item.coach?.name || 'N/A'}</Text>
+                  <View style={styles.modalBadgeContainer}>
+                    {item.is_for_women && <Text style={[styles.modalBadge, styles.womenModalBadge]}>👩 Femmes</Text>}
+                    {item.is_for_kids && <Text style={[styles.modalBadge, styles.kidsModalBadge]}>🧒 Enfants</Text>}
+                    {item.is_free && <Text style={[styles.modalBadge, styles.freeModalBadge]}>🎁 Gratuit</Text>}
+                    {!item.is_free && !item.is_for_women && !item.is_for_kids && (
+                      <Text style={[styles.modalBadge, styles.paidModalBadge]}>💰 Payant</Text>
+                    )}
+                  </View>
                 </View>
               )}
               ListEmptyComponent={
                 <View style={styles.modalEmptyContainer}>
-                  <Ionicons name="woman-outline" size={48} color="#FF69B4" />
-                  <Text style={styles.modalEmptyText}>Aucune session femmes cette semaine</Text>
+                  {sessionType === 'Femmes' && <Ionicons name="woman-outline" size={48} color="#FF69B4" />}
+                  {sessionType === 'Enfants' && <Ionicons name="happy-outline" size={48} color="#64D2FF" />}
+                  {sessionType === 'Gratuites' && <Ionicons name="gift-outline" size={48} color="#00FF88" />}
+                  <Text style={styles.modalEmptyText}>Aucune session {sessionType.toLowerCase()} cette semaine</Text>
                 </View>
               }
             />
@@ -888,6 +990,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333333',
   },
+  womenOnlyCard: {
+    backgroundColor: 'rgba(255, 105, 180, 0.3)',
+    borderColor: '#FF69B4',
+  },
+  kidsOnlyCard: {
+    backgroundColor: 'rgba(100, 210, 255, 0.3)',
+    borderColor: '#64D2FF',
+  },
+  freeOnlyCard: {
+    backgroundColor: 'rgba(0, 255, 136, 0.3)',
+    borderColor: '#00FF88',
+  },
   sessionTitle: {
     fontSize: 18,
     color: '#FFFFFF',
@@ -924,6 +1038,10 @@ const styles = StyleSheet.create({
   freeBadge: {
     backgroundColor: 'rgba(0, 255, 136, 0.2)',
     color: '#00FF88',
+  },
+  paidBadge: {
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    color: '#FFD700',
   },
   // Hours styles
   hoursScrollContainer: {
@@ -1058,10 +1176,6 @@ const styles = StyleSheet.create({
     width: '100%', 
     height: '100%',
   },
-  womenOnlyCard: {
-    backgroundColor: 'rgba(255, 105, 180, 0.3)',
-    borderColor: '#FF69B4',
-  },
   mapOverlay: {
     position: 'absolute',
     bottom: 15,
@@ -1172,6 +1286,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 105, 180, 0.2)',
     borderColor: '#FF69B4',
   },
+  kidsOnlyChip: {
+    backgroundColor: 'rgba(100, 210, 255, 0.2)',
+    borderColor: '#64D2FF',
+  },
+  freeOnlyChip: {
+    backgroundColor: 'rgba(0, 255, 136, 0.2)',
+    borderColor: '#00FF88',
+  },
   sessionChipTitle: {
     color: '#FFFFFF',
     fontSize: 14,
@@ -1211,33 +1333,45 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
     fontWeight: '600',
   },
-  // Women Summary Card
+  // Special Sessions Summary Cards
+  specialSessionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  specialSummaryCard: {
+    width: '32%',
+    borderRadius: 15,
+    padding: 10,
+    borderWidth: 1,
+  },
   womenSummaryCard: {
     backgroundColor: 'rgba(255, 105, 180, 0.15)',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
     borderColor: 'rgba(255, 105, 180, 0.3)',
   },
-  womenSummaryContent: {
-    flexDirection: 'row',
+  kidsSummaryCard: {
+    backgroundColor: 'rgba(100, 210, 255, 0.15)',
+    borderColor: 'rgba(100, 210, 255, 0.3)',
+  },
+  freeSummaryCard: {
+    backgroundColor: 'rgba(0, 255, 136, 0.15)',
+    borderColor: 'rgba(0, 255, 136, 0.3)',
+  },
+  specialSummaryContent: {
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  womenSummaryText: {
-    flex: 1,
-    marginHorizontal: 15,
+  specialSummaryText: {
+    marginTop: 5,
   },
-  womenSummaryTitle: {
-    color: '#FF69B4',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  womenSummaryCount: {
-    color: '#FF69B4',
+  specialSummaryTitle: {
     fontSize: 14,
-    opacity: 0.8,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  specialSummaryCount: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 3,
   },
   // Modal styles
   modalContainer: {
@@ -1261,14 +1395,36 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 22,
-    color: '#FF69B4',
     fontWeight: 'bold',
+  },
+  womenModalTitle: {
+    color: '#FF69B4',
+  },
+  kidsModalTitle: {
+    color: '#64D2FF',
+  },
+  freeModalTitle: {
+    color: '#00FF88',
   },
   modalSessionCard: {
     backgroundColor: '#252525',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  womenModalCard: {
+    backgroundColor: 'rgba(255, 105, 180, 0.2)',
+    borderColor: '#FF69B4',
+  },
+  kidsModalCard: {
+    backgroundColor: 'rgba(100, 210, 255, 0.2)',
+    borderColor: '#64D2FF',
+  },
+  freeModalCard: {
+    backgroundColor: 'rgba(0, 255, 136, 0.2)',
+    borderColor: '#00FF88',
   },
   modalSessionTitle: {
     fontSize: 16,
@@ -1279,14 +1435,44 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
     marginTop: 5,
   },
+  modalBadgeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  modalBadge: {
+    fontSize: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginRight: 8,
+    marginBottom: 5,
+    overflow: 'hidden',
+  },
+  womenModalBadge: {
+    backgroundColor: 'rgba(255, 105, 180, 0.2)',
+    color: '#FF69B4',
+  },
+  kidsModalBadge: {
+    backgroundColor: 'rgba(100, 210, 255, 0.2)',
+    color: '#64D2FF',
+  },
+  freeModalBadge: {
+    backgroundColor: 'rgba(0, 255, 136, 0.2)',
+    color: '#00FF88',
+  },
+  paidModalBadge: {
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    color: '#FFD700',
+  },
   modalEmptyContainer: {
     alignItems: 'center',
     padding: 20,
   },
   modalEmptyText: {
-    color: '#FF69B4',
     marginTop: 15,
     fontSize: 16,
+    textAlign: 'center',
   },
 });
 

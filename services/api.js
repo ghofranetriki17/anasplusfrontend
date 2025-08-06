@@ -48,37 +48,6 @@ const clearToken = async () => {
   }
 };
 
-export const workoutAPI = {
-    updateExercisePivot: (workoutId, exerciseId, data) => {
-    return api.patch(`/workouts/${workoutId}/exercises/${exerciseId}`, data);
-  },
-
-  getAllWorkouts: () => api.get('/workouts'),
-  createWorkout: (workout) => api.post('/workouts', workout),
- removeExercise: (workoutId, exerciseId) =>
-    api.delete(`/workouts/${workoutId}/exercises/${exerciseId}`),
-  // 🔥 AJOUTE CECI :
-attachExerciseToWorkout: (workoutId, exerciseId) =>
-  api.post(`/workouts/${workoutId}/exercises`, {
-    exercise_id: exerciseId,
-    achievement: 0,
-    is_done: false,
-    order: 0,
-  }),
-
-
-  create: (data) => api.post('/workouts', data).then(res => res.data),
-  getAll: () => api.get('/workouts').then(res => res.data),
-  // etc.
-     getAll: () => api.get('/workouts').then(res => res.data),
-  getById: (id) => api.get(`/workouts/${id}`).then(res => res.data),
-  create: (data) => api.post('/workouts', data).then(res => res.data),
-  update: (id, data) => api.put(`/workouts/${id}`, data).then(res => res.data),
-  delete: (id) => api.delete(`/workouts/${id}`).then(res => res.data),
-    addExercise: (workoutId, exerciseData) => api.post(`/workouts/${workoutId}/exercises`, exerciseData),
-};
-
-
 // Request interceptor
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
@@ -162,10 +131,69 @@ export const authAPI = {
   },
   getUser: () => api.get('/user'),
 };
+
+export const workoutAPI = {
+  updateExercisePivot: (workoutId, exerciseId, data) => {
+    return api.patch(`/workouts/${workoutId}/exercises/${exerciseId}`, data);
+  },
+  getAllWorkouts: () => api.get('/workouts'),
+  createWorkout: (workout) => api.post('/workouts', workout),
+  removeExercise: (workoutId, exerciseId) =>
+    api.delete(`/workouts/${workoutId}/exercises/${exerciseId}`),
+  attachExerciseToWorkout: (workoutId, exerciseId) =>
+    api.post(`/workouts/${workoutId}/exercises`, {
+      exercise_id: exerciseId,
+      achievement: 0,
+      is_done: false,
+      order: 0,
+    }),
+  create: (data) => api.post('/workouts', data).then(res => res.data),
+  getAll: () => api.get('/workouts').then(res => res.data),
+  getById: (id) => api.get(`/workouts/${id}`).then(res => res.data),
+  update: (id, data) => api.put(`/workouts/${id}`, data).then(res => res.data),
+  delete: (id) => api.delete(`/workouts/${id}`).then(res => res.data),
+  addExercise: (workoutId, exerciseData) => api.post(`/workouts/${workoutId}/exercises`, exerciseData),
+};
+
+// Updated and consolidated groupSessionAPI
 export const groupSessionAPI = {
+  // Get sessions by branch
   getByBranch: (branchId) =>
     api.get(`/branches/${branchId}/sessions`).then(res => res.data.data || res.data),
+  
+  // Get all sessions
+  getAll: () =>
+    api.get('/group-sessions').then(res => res.data.data || res.data),
+    
+  // Get upcoming sessions
+  getUpcoming: () =>
+    api.get('/group-sessions/upcoming').then(res => res.data.data || res.data),
+    
+  // Get available sessions
+  getAvailable: () =>
+    api.get('/group-sessions/available').then(res => res.data.data || res.data),
+  
+  // Get single session
+  getById: (sessionId) =>
+    api.get(`/group-sessions/${sessionId}`).then(res => res.data.data || res.data),
+  
+  // Booking methods
+  bookSession: (sessionId) =>
+    api.post(`/group-sessions/${sessionId}/book`).then(res => res.data),
+    
+  cancelBooking: (sessionId) =>
+    api.delete(`/group-sessions/${sessionId}/book`).then(res => res.data),
+    
+  getUserBookings: () =>
+    api.get('/user/bookings').then(res => res.data.data || res.data),
+    
+  getSessionBookings: (sessionId) =>
+    api.get(`/group-sessions/${sessionId}/bookings`).then(res => res.data.data || res.data),
+    
+  checkBookingStatus: (sessionId) =>
+    api.get(`/group-sessions/${sessionId}/booking-status`).then(res => res.data),
 };
+
 export const branchAPI = {
   getCoaches: (branchId) =>
     api.get(`/branches/${branchId}/coaches`).then(res => res.data.data || res.data),
@@ -184,7 +212,6 @@ export const programmeAPI = {
   activate: (id) => api.post(`/programmes/${id}/activate`),
 };
 
-// ...other imports and setup remain the same
 export const attachExerciseToWorkout = (workoutId, exerciseId) => {
   return api.post(`/workouts/${workoutId}/exercises`, {
     exercise_id: exerciseId,
@@ -193,23 +220,21 @@ export const attachExerciseToWorkout = (workoutId, exerciseId) => {
     order: 0,
   });
 };
+
 export const machineAPI = {
   getByBranch: (branchId) => api.get(`/branches/${branchId}/machines`),
   getAll: () => api.get('/machines').then(res => res.data.data || res.data),
 };
 
 export const exerciseAPI = {
-    create: (data) => api.post('/exercises', data).then(res => res.data),
-
+  create: (data) => api.post('/exercises', data).then(res => res.data),
   getAll: () => api.get('/exercises').then(res => res.data),
   getById: (id) => api.get(`/exercises/${id}`).then(res => res.data),
   getChargesForMachine: (machineId) => api.get(`/machines/${machineId}/charges`).then(res => res.data.data || res.data),
   getMovements: () => api.get('/movements').then(res => res.data.data || res.data),
   update: (id, data) => api.put(`/exercises/${id}`, data).then(res => res.data),
-delete: (id) => api.delete(`/exercises/${id}`).then(res => res.data),
-
+  delete: (id) => api.delete(`/exercises/${id}`).then(res => res.data),
 };
-
 
 export const userProgressAPI = {
   // This will now use the protected route that returns only the authenticated user's progress
@@ -220,15 +245,11 @@ export const userProgressAPI = {
   delete: (id) => api.delete(`/user-progresses/${id}`).then(res => res.data),
 };
 
-
-// In your api.js (add this if missing)
-
 // Export token management functions
 export const tokenService = {
   getToken,
   setToken,
   clearToken
 };
-// In your api.js, enable detailed logging
 
 export default api;
