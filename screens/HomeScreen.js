@@ -326,19 +326,20 @@ const HomeScreen = ({ navigation }) => {
             contentContainerStyle={styles.categoriesContainer}
           />
         </View>
+{/*
+<View style={styles.section}>
+  <Text style={styles.sectionTitle}>Special Offers</Text>
+  <FlatList
+    horizontal
+    data={promotions}
+    renderItem={renderPromoItem}
+    keyExtractor={item => item.id.toString()}
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.promotionsContainer}
+  />
+</View>
+*/}
 
-        {/* Promotions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Special Offers</Text>
-          <FlatList
-            horizontal
-            data={promotions}
-            renderItem={renderPromoItem}
-            keyExtractor={item => item.id.toString()}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.promotionsContainer}
-          />
-        </View>
 
         {/* Branch List */}
         <View style={styles.section}>
@@ -369,7 +370,7 @@ const HomeScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* Shop Section */}
+        {/* Shop Section 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Gym Essentials</Text>
@@ -386,8 +387,8 @@ const HomeScreen = ({ navigation }) => {
             contentContainerStyle={styles.shopContainer}
           />
         </View>
-
-        {/* Membership Benefits */}
+*/}
+        {/* Membership Benefits
         <View style={styles.benefitsSection}>
           <Text style={styles.sectionTitle}>Membership Benefits</Text>
           <View style={styles.benefitsGrid}>
@@ -409,7 +410,7 @@ const HomeScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
-
+ */}
         {/* Logout Button */}
         <TouchableOpacity
           style={styles.logoutButton}

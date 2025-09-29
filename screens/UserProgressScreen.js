@@ -10,7 +10,8 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 import { userProgressAPI } from '../services/api';
 import { LineChart } from "react-native-chart-kit";
@@ -68,6 +69,30 @@ const UserProgressScreen = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const deleteProgress = async (id) => {
+    Alert.alert(
+      'Confirm Delete',
+      'Are you sure you want to delete this entry?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await userProgressAPI.delete(id);
+              Alert.alert('Deleted', 'Progress entry deleted successfully');
+              fetchProgresses();
+            } catch (error) {
+              console.error('Error deleting progress:', error);
+              Alert.alert('Error', 'Failed to delete progress');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const addProgress = async () => {
@@ -245,52 +270,6 @@ const UserProgressScreen = () => {
           </>
         )}
 
-        <FlatList
-          data={progresses}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.progressItem}>
-              <Text style={styles.dateText}>{new Date(item.recorded_at).toLocaleDateString()}</Text>
-              <View style={styles.metricsContainer}>
-                <View style={styles.metricBox}>
-                  <Icon name="balance-scale" size={24} color="#FF6F61" />
-                  <Text style={styles.metricValue}>{item.weight ? `${item.weight} kg` : '-'}</Text>
-                  <Text style={styles.metricLabel}>Weight</Text>
-                </View>
-
-                <View style={styles.metricBox}>
-                  <Icon name="arrows-v" size={24} color="#FF6F61" />
-                  <Text style={styles.metricValue}>{item.height ? `${item.height} cm` : '-'}</Text>
-                  <Text style={styles.metricLabel}>Height</Text>
-                </View>
-
-                <View style={styles.metricBox}>
-                  <Icon name="tint" size={24} color="#FF6F61" />
-                  <Text style={styles.metricValue}>{item.body_fat ? `${item.body_fat}%` : '-'}</Text>
-                  <Text style={styles.metricLabel}>Body Fat</Text>
-                </View>
-
-                <View style={styles.metricBox}>
-                  <Icon name="heartbeat" size={24} color="#FF6F61" />
-                  <Text style={styles.metricValue}>{item.muscle_mass ? `${item.muscle_mass}%` : '-'}</Text>
-                  <Text style={styles.metricLabel}>Muscle Mass</Text>
-                </View>
-
-                <View style={styles.metricBox}>
-                  <Icon name="balance-scale" size={24} color="#FFD700" />
-                  <Text style={styles.metricValue}>{formatImc(item.imc)}</Text>
-                  <Text style={styles.metricLabel}>BMI</Text>
-                </View>
-              </View>
-            </View>
-          )}
-          scrollEnabled={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No progress data yet. Add your first entry below!</Text>
-            </View>
-          }
-        />
 
         <View style={styles.form}>
           <Text style={styles.formTitle}>Add New Progress</Text>
@@ -338,6 +317,61 @@ const UserProgressScreen = () => {
           </View>
           <Button title="Add Progress" onPress={addProgress} />
         </View>
+        <FlatList
+          data={progresses}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.progressItem}>
+              <Text style={styles.dateText}>{new Date(item.recorded_at).toLocaleDateString()}</Text>
+              <View style={styles.metricsContainer}>
+                
+                <View style={styles.metricBox}>
+                  <Icon name="balance-scale" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.weight ? `${item.weight} kg` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Weight</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="arrows-v" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.height ? `${item.height} cm` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Height</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="tint" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.body_fat ? `${item.body_fat}%` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Body Fat</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="heartbeat" size={24} color="#FF6F61" />
+                  <Text style={styles.metricValue}>{item.muscle_mass ? `${item.muscle_mass}%` : '-'}</Text>
+                  <Text style={styles.metricLabel}>Muscle Mass</Text>
+                </View>
+
+                <View style={styles.metricBox}>
+                  <Icon name="balance-scale" size={24} color="#FFD700" />
+                  <Text style={styles.metricValue}>{formatImc(item.imc)}</Text>
+                  <Text style={styles.metricLabel}>BMI</Text>
+                </View>
+              </View>
+              
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => deleteProgress(item.id)}
+              >
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          scrollEnabled={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No progress data yet. Add your first entry below!</Text>
+            </View>
+          }
+        />
+
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -398,7 +432,8 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0,
+    height: 2 },
   },
   metricValue: {
     color: 'white',
@@ -411,6 +446,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 3,
     textTransform: 'uppercase',
+  },
+  deleteButton: {
+    marginTop: 10,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   form: { 
     marginTop: 20, 
